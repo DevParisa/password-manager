@@ -1,5 +1,8 @@
 from crypto import derive_key, encrypt_data, decrypt_data
 import os
+import json
+from exceptions import FileSaveError, FileLoadError, VaultNotFoundError, InvalidPasswordError, VaultError
+from cryptography.fernet import InvalidToken
 
 class Vault:
 	def __init__(self):
@@ -28,9 +31,11 @@ class Vault:
 				file.write(salt+encrypted) #salt is alwasy 16 bytes
 		except Exception as e:
 			raise FileSaveError(f"Error saving file: {e}")
-			#FIXME catch specific exceptions separately—wrong password vs file not found vs corrupted file
+			
 
 	def load_file(self, filepath: str, master_password: str):
+		if not os.path.exists(filepath):
+			raise VaultNotFoundError("Vault not found")
 		try:
 			with open(filepath, "rb") as file:
 				data = file.read()
@@ -38,18 +43,12 @@ class Vault:
 			key = derive_key(master_password, salt)
 			data_str = decrypt_data(data[16:], key)
 			self.dvault = json.loads(data_str)
+		except InvalidToken:
+			raise InvalidPasswordError("Wrong master password.")
 		except Exception as e:
 			raise FileLoadError(f"Error loading file: {e}")
-			#FIXME catch specific exceptions separately—wrong password vs file not found vs corrupted file
+			
 
-
-# vault = Vault()
-# try:
-# 	vault.add("gmail", "mypassword")
-# 	vault.add("gmail2", "mypassword2")
-# 	print(vault.get("gmail3"))
-# 	print(vault.list_services())
-# except ValueError as e:
-# 	print(f"cannot override {e}")
-# except KeyError as e:
-# 	print(f"key does not exists {e}")
+	@staticmethod
+	def exists(filepath: str) -> bool:
+		return os.path.exists(filepath)

@@ -21,22 +21,3 @@ def encrypt_data(data: str, key: bytes) -> bytes:
 def decrypt_data(encrypted: bytes, key: bytes) -> str:
     f = Fernet(key)
     return f.decrypt(encrypted).decode('utf-8')
-
-
-# import os
-
-# salt = os.urandom(16)
-# password = "my_master_password"
-
-# key = derive_key(password, salt)
-# encrypted = encrypt_data("secret data", key)
-# decrypted = decrypt_data(encrypted, key)
-
-# print(decrypted)  # should print: secret data
-
-# # Test wrong password fails
-# wrong_key = derive_key("wrong_password", salt)
-# try:
-#     decrypt_data(encrypted, wrong_key)
-# except Exception as e:
-#     print(f"Correctly failed: {e}")

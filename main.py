@@ -15,6 +15,14 @@ add_pars.add_argument("password", help="Password to store")
 get_parser = subparsers.add_parser("get", help="Get a password")
 get_parser.add_argument("service", help="Service name")
 
+
+update_parser = subparsers.add_parser("update", help="Update a password")
+update_parser.add_argument("service", help="Service name")
+update_parser.add_argument("password", help="Password to store")
+
+delete_parser = subparsers.add_parser("delete", help="Delete a service")
+delete_parser.add_argument("service", help="Service name")
+
 subparsers.add_parser("list", help="List all services")
 
 
@@ -63,6 +71,38 @@ elif args.command == "get":
 		vault = Vault()
 		vault.load_file(VAULT_FILE, master_password)
 		print(vault.get(args.service))
+	except VaultNotFoundError:
+		print("Run 'python main.py init' first.")
+	except InvalidPasswordError:
+		print("Wrong password. Try again.")
+	except KeyError:
+		print(f"Service '{args.service}' not found.")
+
+elif args.command == "update":
+	# load vault, update a service
+	try:
+		master_password = getpass("Enter master password: ")
+		vault = Vault()
+		vault.load_file(VAULT_FILE, master_password)
+		vault.update(args.service, args.password)
+		vault.save_file(VAULT_FILE, master_password)
+		print(f"Password of {args.service} is updated.")
+	except VaultNotFoundError:
+		print("Run 'python main.py init' first.")
+	except InvalidPasswordError:
+		print("Wrong password. Try again.")
+	except KeyError:
+		print(f"Service '{args.service}' not found.")
+
+elif args.command == "delete":
+	# load vault, delete a service
+	try:
+		master_password = getpass("Enter master password: ")
+		vault = Vault()
+		vault.load_file(VAULT_FILE, master_password)
+		vault.delete(args.service)
+		vault.save_file(VAULT_FILE, master_password)
+		print(f"Service {args.service} is deleted.")
 	except VaultNotFoundError:
 		print("Run 'python main.py init' first.")
 	except InvalidPasswordError:
